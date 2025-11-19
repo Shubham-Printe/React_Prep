@@ -26,7 +26,6 @@ function Row({ index, style }: ListChildComponentProps) {
 }
 
 export default function VirtualizationDemo() {
-  const [mode, setMode] = useState<'virtualized' | 'plain'>('virtualized')
   const [plainCount, setPlainCount] = useState(1000)
   const height = 360
   const itemSize = 40
@@ -35,45 +34,39 @@ export default function VirtualizationDemo() {
   return (
     <section style={{ display: 'grid', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <input
-            type="radio"
-            name="mode"
-            checked={mode === 'virtualized'}
-            onChange={() => setMode('virtualized')}
-          />
-          Virtualized (react-window)
+        <div style={{ fontWeight: 600 }}>Compare side by side</div>
+        <div style={{ fontSize: 12, color: '#475569' }}>
+          Total dataset: {bigData.length.toLocaleString()} rows
+        </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
+          Plain list items:
+          <select value={plainCount} onChange={(e) => setPlainCount(Number(e.target.value))}>
+            <option value={100}>100</option>
+            <option value={1000}>1000</option>
+            <option value={3000}>3000</option>
+            <option value={10000}>10000 (may be slow)</option>
+          </select>
         </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <input type="radio" name="mode" checked={mode === 'plain'} onChange={() => setMode('plain')} />
-          Plain list (no virtualization)
-        </label>
-        {mode === 'plain' && (
-          <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            Items to render:
-            <select value={plainCount} onChange={(e) => setPlainCount(Number(e.target.value))}>
-              <option value={100}>100</option>
-              <option value={1000}>1000</option>
-              <option value={3000}>3000</option>
-              <option value={10000}>10000 (may be slow)</option>
-            </select>
-          </label>
-        )}
       </div>
-      <div style={{ fontSize: 12, color: '#475569' }}>
-        Total dataset: {bigData.length.toLocaleString()} rows.{' '}
-        {mode === 'virtualized' ? (
-          <>Approx rendered at once: ~{approxVisible} (recycled as you scroll).</>
-        ) : (
-          <>Rendered DOM nodes: {plainItems.length.toLocaleString()} (all at once).</>
-        )}
-      </div>
-      <div style={{ border: '1px solid #ddd', borderRadius: 6, background: '#fff' }}>
-        {mode === 'virtualized' ? (
+      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr' }}>
+        <div style={{ border: '1px solid #ddd', borderRadius: 6, background: '#fff' }}>
+          <div style={{ padding: 8, borderBottom: '1px solid #eee', fontWeight: 600 }}>
+            Virtualized (react-window)
+          </div>
+          <div style={{ padding: '8px 8px 0', fontSize: 12, color: '#475569' }}>
+            Approx rendered at once: ~{approxVisible} rows (recycled as you scroll)
+          </div>
           <List height={height} itemCount={bigData.length} itemSize={itemSize} width={520}>
             {Row}
           </List>
-        ) : (
+        </div>
+        <div style={{ border: '1px solid #ddd', borderRadius: 6, background: '#fff' }}>
+          <div style={{ padding: 8, borderBottom: '1px solid #eee', fontWeight: 600 }}>
+            Plain list (no virtualization)
+          </div>
+          <div style={{ padding: '8px 8px 0', fontSize: 12, color: '#475569' }}>
+            Rendered DOM nodes: {plainItems.length.toLocaleString()}
+          </div>
           <div style={{ height, overflow: 'auto' }}>
             {plainItems.map((item, idx) => (
               <div
@@ -92,11 +85,11 @@ export default function VirtualizationDemo() {
               </div>
             ))}
           </div>
-        )}
+        </div>
       </div>
       <div style={{ fontSize: 12, color: '#475569' }}>
-        Toggle between modes to feel the difference. Virtualization keeps the DOM small and smooth by reusing a
-        handful of rows; the plain list mounts every item at once.
+        Virtualization keeps the DOM tiny and scrolling smooth. The plain list mounts every item and gets heavy as the
+        count increases.
       </div>
     </section>
   )
