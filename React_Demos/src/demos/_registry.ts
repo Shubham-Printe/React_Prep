@@ -115,9 +115,9 @@ export const demos: DemoMeta[] = [
   {
     slug: 'suspense-data',
     title: 'Suspense + Data Fetch (mock)',
-    description: 'Suspend UI while awaiting a mock async resource.',
+    description: 'Split boundaries, preload, refetch, and error paths for mock data.',
     explanation:
-      'The resource throws a promise while loading, which Suspense catches to show a fallback. When the promise resolves, the component re-renders with data.',
+      'Two independent boundaries: “User” and “Posts” suspend separately with their own fallbacks and error retries. Controls let you select user, set delay, toggle failures, Preload into a simple cache, and Refetch to bust cache. This shows how Suspense handles loading at the nearest boundary while the rest of the UI stays responsive.',
     Component: lazy(() => import('./12-suspense-data/SuspenseDataDemo')),
   },
   {
