@@ -77,9 +77,13 @@ export const demos: DemoMeta[] = [
   {
     slug: 'debounce-vs-throttle',
     title: 'Debouncing vs Throttling',
-    description: 'Compare behaviors under rapid input and scroll.',
+    description: 'Three clear parts: Debounce input, Throttle input, Throttle scroll.',
     explanation:
-      'Debounce waits for a quiet period before invoking the handler; rapid changes coalesce into one call. Throttle runs at most once per interval during continuous events.',
+      'A) Debounce (input): handler waits 500ms after you stop typing; shows the debounced value and call count.' +
+      '\n\n' +
+      'B) Throttle (input): handler runs at most once per 500ms while you keep typing; shows the throttled value and call count.' +
+      '\n\n' +
+      'C) Throttle (scroll): raw event count increments every scroll event, throttled count increments at most once per 200ms.',
     Component: lazy(() => import('./08-debounce-throttle/DebounceThrottleDemo')),
   },
   {
