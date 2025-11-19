@@ -105,9 +105,11 @@ export const demos: DemoMeta[] = [
   {
     slug: 'error-boundary',
     title: 'Error Boundary',
-    description: 'Catch render errors and display a fallback UI.',
+    description: 'Non-caught cases and nested (guarded vs unguarded).',
     explanation:
-      'A class component with componentDidCatch/getDerivedStateFromError intercepts render errors in its subtree and shows a fallback, preventing the whole app from crashing.',
+      'A) Nested boundaries: Shared container with Guarded (inner boundary) and Unguarded (no inner boundary). Guarded errors are caught inside; Unguarded errors bubble to the outer boundary.' +
+      '\n\n' +
+      'B) Not caught: Event handler and async/promise errors do not trip boundaries; use try/catch, .catch(), or global handlers. Includes a local “crash render” to contrast what boundaries do catch.',
     Component: lazy(() => import('./11-error-boundary/ErrorBoundaryDemo')),
   },
   {
