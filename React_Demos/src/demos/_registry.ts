@@ -89,9 +89,9 @@ export const demos: DemoMeta[] = [
   {
     slug: 'virtualization',
     title: 'Virtualization (react-window)',
-    description: 'Render 10,000 items smoothly with windowing.',
+    description: 'Side-by-side: virtualized list vs plain list with item count control.',
     explanation:
-      'Only the rows visible in the viewport are rendered; as you scroll, items are recycled. This limits DOM nodes and keeps scrolling smooth.',
+      'Virtualized list renders only visible rows (and recycles them) — DOM stays tiny. Plain list mounts every row at once. Toggle between modes and adjust item count to see DOM nodes and smoothness differ.',
     Component: lazy(() => import('./09-virtualization/VirtualizationDemo')),
   },
   {

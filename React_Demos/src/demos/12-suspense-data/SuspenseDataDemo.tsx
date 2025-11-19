@@ -4,16 +4,16 @@ type Resource<T> = { read: () => T }
 
 function createResource<T>(promise: Promise<T>): Resource<T> {
   let status: 'pending' | 'success' | 'error' = 'pending'
-  let result: T
+  let result: T | undefined
   let error: unknown
   const suspender = promise
-    .then((r) => { status = 'success'; /* @ts-expect-error */ (result = r) })
+    .then((r) => { status = 'success'; result = r as T })
     .catch((e) => { status = 'error'; error = e })
   return {
     read() {
       if (status === 'pending') throw suspender
       if (status === 'error') throw error
-      return result!
+      return result as T
     },
   }
 }

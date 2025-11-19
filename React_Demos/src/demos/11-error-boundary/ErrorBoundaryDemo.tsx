@@ -1,7 +1,7 @@
 import { Component, ReactNode, useState } from 'react'
 
-class ErrorBoundary extends Component<{ fallback: ReactNode }, { hasError: boolean }> {
-  constructor(props: { fallback: ReactNode }) {
+class ErrorBoundary extends Component<{ fallback: ReactNode; children?: ReactNode }, { hasError: boolean }> {
+  constructor(props: { fallback: ReactNode; children?: ReactNode }) {
     super(props)
     this.state = { hasError: false }
   }
