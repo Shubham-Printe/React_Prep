@@ -97,9 +97,9 @@ export const demos: DemoMeta[] = [
   {
     slug: 'refs-imperative-handle',
     title: 'Refs & useImperativeHandle',
-    description: 'Expose imperative methods from child components.',
+    description: 'Expose an imperative API: focus, select, setValue, clear, disable/enable, measure.',
     explanation:
-      'The child uses useImperativeHandle to expose focus/clear methods over a ref. The parent calls these methods without reaching into DOM details directly.',
+      'The input exposes an imperative API via useImperativeHandle: focus, select, setValue, clear, disable/enable, and measure (reads size). The parent triggers these actions without directly querying the DOM.',
     Component: lazy(() => import('./10-refs-imperative-handle/ImperativeHandleDemo')),
   },
   {
