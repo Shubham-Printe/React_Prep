@@ -57,6 +57,30 @@ export const demos: DemoMeta[] = [
     Component: lazy(() => import('./05-custom-hooks/CustomHooksDemo')),
   },
   {
+    slug: 'reducer',
+    title: 'Reducer (useReducer)',
+    description: 'State transitions via reducer actions.',
+    explanation:
+      'State changes are modeled as actions handled by a reducer. Dispatching actions makes updates predictable and testable, separate from rendering.',
+    Component: lazy(() => import('./13-reducer/ReducerDemo')),
+  },
+  {
+    slug: 'transitions',
+    title: 'Transitions (useTransition)',
+    description: 'Keep typing responsive while rendering large lists.',
+    explanation:
+      'Urgent updates (input value) render immediately. Non-urgent filtering runs in a transition, letting React keep the UI responsive and show a pending hint.',
+    Component: lazy(() => import('./15-transitions/TransitionsDemo')),
+  },
+  {
+    slug: 'refs-imperative-handle',
+    title: 'Refs & useImperativeHandle',
+    description: 'Expose an imperative API: focus, select, setValue, clear, disable/enable, measure.',
+    explanation:
+      'The input exposes an imperative API via useImperativeHandle: focus, select, setValue, clear, disable/enable, and measure (reads size). The parent triggers these actions without directly querying the DOM.',
+    Component: lazy(() => import('./10-refs-imperative-handle/ImperativeHandleDemo')),
+  },
+  {
     slug: 'forms',
     title: 'Forms (controlled vs uncontrolled)',
     description: 'Side-by-side: controlled with validation vs uncontrolled with refs.',
@@ -95,14 +119,6 @@ export const demos: DemoMeta[] = [
     Component: lazy(() => import('./09-virtualization/VirtualizationDemo')),
   },
   {
-    slug: 'refs-imperative-handle',
-    title: 'Refs & useImperativeHandle',
-    description: 'Expose an imperative API: focus, select, setValue, clear, disable/enable, measure.',
-    explanation:
-      'The input exposes an imperative API via useImperativeHandle: focus, select, setValue, clear, disable/enable, and measure (reads size). The parent triggers these actions without directly querying the DOM.',
-    Component: lazy(() => import('./10-refs-imperative-handle/ImperativeHandleDemo')),
-  },
-  {
     slug: 'error-boundary',
     title: 'Error Boundary',
     description: 'Non-caught cases and nested (guarded vs unguarded).',
@@ -121,28 +137,12 @@ export const demos: DemoMeta[] = [
     Component: lazy(() => import('./12-suspense-data/SuspenseDataDemo')),
   },
   {
-    slug: 'reducer',
-    title: 'Reducer (useReducer)',
-    description: 'State transitions via reducer actions.',
-    explanation:
-      'State changes are modeled as actions handled by a reducer. Dispatching actions makes updates predictable and testable, separate from rendering.',
-    Component: lazy(() => import('./13-reducer/ReducerDemo')),
-  },
-  {
     slug: 'portals',
     title: 'Portals (Modal)',
     description: 'Render children into document.body via portals.',
     explanation:
       'createPortal renders the modal outside the parent DOM hierarchy (into body) while preserving React ownership and events. Useful for overlays and popovers.',
     Component: lazy(() => import('./14-portals/PortalsDemo')),
-  },
-  {
-    slug: 'transitions',
-    title: 'Transitions (useTransition)',
-    description: 'Keep typing responsive while rendering large lists.',
-    explanation:
-      'Urgent updates (input value) render immediately. Non-urgent filtering runs in a transition, letting React keep the UI responsive and show a pending hint.',
-    Component: lazy(() => import('./15-transitions/TransitionsDemo')),
   },
 ]
 
