@@ -139,9 +139,9 @@ export const demos: DemoMeta[] = [
   {
     slug: 'portals',
     title: 'Portals (Modal)',
-    description: 'Render children into document.body via portals.',
+    description: 'Modal + tooltip rendered to body to escape clipping/stacking.',
     explanation:
-      'createPortal renders the modal outside the parent DOM hierarchy (into body) while preserving React ownership and events. Useful for overlays and popovers.',
+      'A modal and a tooltip both render into document.body via createPortal. The modal includes backdrop and ESC to close. The tooltip is anchored inside a clipped container, but portaled to body so it isn’t cut off. This demonstrates how portals escape overflow and stacking contexts while preserving React events/state.',
     Component: lazy(() => import('./14-portals/PortalsDemo')),
   },
 ]
