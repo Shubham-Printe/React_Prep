@@ -6,7 +6,8 @@ import { DemoList } from './components/DemoList'
 
 function useDemoMeta() {
   const { pathname } = useLocation()
-  const slug = pathname.replace(/^\//, '')
+  const [, first] = pathname.split('/')
+  const slug = first ?? ''
   return demos.find((d) => d.slug === slug)
 }
 
@@ -44,7 +45,7 @@ export default function App() {
           {demos.map((demo) => (
             <Route
               key={demo.slug}
-              path={`/${demo.slug}`}
+              path={`/${demo.slug}/*`}
               element={
                 <Suspense fallback={<div>Loading {demo.title}…</div>}>
                   <demo.Component />

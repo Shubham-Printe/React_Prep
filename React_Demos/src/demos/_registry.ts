@@ -69,9 +69,9 @@ export const demos: DemoMeta[] = [
   {
     slug: 'routing-patterns',
     title: 'Routing Patterns',
-    description: 'Nested routes and URL params with React Router.',
+    description: 'Nested routes, params, search params, active links, guards, programmatic nav.',
     explanation:
-      'Nested <Routes> render child routes inside a layout. useParams reads the :id segment. The parent stays mounted while the nested route swaps.',
+      'This demo shows: nested routes and index routes; URL params with useParams; search params for filtering; NavLink active styling; programmatic navigation with useNavigate; and a simple protected route that checks a “Logged in” toggle to access settings.',
     Component: lazy(() => import('./07-routing-patterns/RouterPatternsDemo')),
   },
   {
