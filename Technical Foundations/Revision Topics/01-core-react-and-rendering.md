@@ -163,7 +163,8 @@ Guidelines:
 ---
 
 ### Lifting state up and state colocation
-Colocate state with the components that use it to reduce prop drilling, re-renders, and accidental coupling. Lift state up only when multiple siblings need to coordinate or share the same source of truth. If lifting causes excessive prop drilling, consider context or a state library. Avoid duplicating derived state; compute on the fly from minimal sources.
+Colocate state with the components that use it to reduce prop drilling, re-renders, and accidental coupling. 
+Lift state up only when multiple siblings need to coordinate or share the same source of truth. If lifting causes excessive prop drilling, consider context or a state library. Avoid duplicating derived state; compute on the fly from minimal sources.
 
 Quick checks:
 - Is this state truly shared? If not, keep it local.
