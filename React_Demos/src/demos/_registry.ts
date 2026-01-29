@@ -137,12 +137,54 @@ export const demos: DemoMeta[] = [
     Component: lazy(() => import('./12-suspense-data/SuspenseDataDemo')),
   },
   {
+    slug: 'suspense-data-fetching',
+    title: 'Suspense + Data Fetch (step 1)',
+    description: 'Static profile data displayed without async behavior yet.',
+    explanation:
+      'Step 1 keeps it fully synchronous: the component just renders static name/email/designation. We will add a mocked async fetch + resource to suspend in the next step.',
+    Component: lazy(() => import('./20-suspense-data-fetching/SuspenseDataFetchingDemo')),
+  },
+  {
+    slug: 'code-splitting-suspense',
+    title: 'Code Splitting + Suspense (baseline)',
+    description: 'A baseline tabbed UI that eagerly loads heavy panels.',
+    explanation:
+      'Three tabs (Analytics, Gallery, Reports) each load heavy data at module scope. Even though only one tab renders at a time, all modules load up front. This is the baseline we will optimize with code splitting + Suspense.',
+    Component: lazy(() => import('./19-code-splitting-suspense/CodeSplittingSuspenseDemo')),
+  },
+  {
     slug: 'portals',
     title: 'Portals (Modal)',
     description: 'Modal + tooltip rendered to body to escape clipping/stacking.',
     explanation:
       'A modal and a tooltip both render into document.body via createPortal. The modal includes backdrop and ESC to close. The tooltip is anchored inside a clipped container, but portaled to body so it isn’t cut off. This demonstrates how portals escape overflow and stacking contexts while preserving React events/state.',
     Component: lazy(() => import('./14-portals/PortalsDemo')),
+  },
+  {
+    slug: 'profiler',
+    title: 'React Profiler: Find unnecessary renders',
+    description: 'Profile a slow list (baseline) and compare with an optimized version.',
+    explanation:
+      'Baseline: typing re-renders many rows; an expensive badge runs in every render; props are unstable (inline objects/functions), so React.memo can’t skip. In Profiler, expect long commits and many ItemRow renders.' +
+      '\n\n' +
+      'Optimized: React.memo for rows, stable props via useMemo/useCallback, and heavy work moved into useMemo. In Profiler, commits are shorter and most rows are skipped (gray in flame/ranked views).',
+    Component: lazy(() => import('./17-profiler/ProfilerDemo')),
+  },
+  {
+    slug: 'web-workers',
+    title: 'Web Workers (Offload CPU work)',
+    description: 'Compare main-thread vs worker for a heavy CPU task.',
+    explanation:
+      'Run a CPU-heavy calculation both on the main thread and in a Web Worker. Observe that the main-thread path janks typing/animation, while the worker keeps the UI responsive. The demo shows creation, messaging, cancellation, and timing for both paths.',
+    Component: lazy(() => import('./18-workers/WebWorkersDemo')),
+  },
+  {
+    slug: 'nested-routing',
+    title: 'Nested Routing (Outlet + shared layout)',
+    description: 'A focused demo showing how parent layout stays while child route changes.',
+    explanation:
+      'This demo shows a Users layout with a left sidebar that stays mounted. The right panel is the <Outlet /> area: it renders an index (“Select a user”) for /users and a details page for /users/:id.',
+    Component: lazy(() => import('./21-nested-routing/NestedRoutingDemo')),
   },
 ]
 

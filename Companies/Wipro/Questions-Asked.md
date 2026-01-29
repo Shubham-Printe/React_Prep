@@ -1,0 +1,5 @@
+- Difference between merge and rebase.
+- how isolated and integration testing works.
+- kubernets and docker
+- mongodb saves information in ?
+- protocol to use for AI chatbots

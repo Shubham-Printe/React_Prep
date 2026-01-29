@@ -1,0 +1,3 @@
+- Testing Library
+- React Query and toolkit. over redux
+- 

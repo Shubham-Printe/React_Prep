@@ -1,0 +1,17 @@
+# 2-Day Plan (20 Hours Total)
+
+## Day 1 - Core React + JS (10 Hours)
+- React fundamentals and hooks (2h)
+- JavaScript deep dive: closures, event loop, async (2h)
+- Build a small CRUD app with API integration (3h)
+- Add forms and validation (1h)
+- Quick performance pass: memoization, re-render causes (1h)
+- Flash review: common interview questions (1h)
+
+## Day 2 - Performance + Testing + Mock (10 Hours)
+- Rendering behavior, optimization, code splitting (2h)
+- Component architecture and reusable UI patterns (2h)
+- Routing and protected views (1h)
+- Jest + RTL basics, mock API test (2h)
+- Frontend system design practice (1.5h)
+- 1 mock interview (coding + React) and review (1.5h)
