@@ -4,7 +4,7 @@ Last updated: 2026-01-23
 
 I lead architecture and state-management decisions, maintain a scalable UI foundation, and mentor junior developers. I collaborate closely with backend, design, and stakeholders, owning features from requirements to delivery.
 
-Technically, I’m strong with React Hooks, Context API, Redux Toolkit, and Next.js for SSR, and I focus on TypeScript-first code that improves performance and developer productivity.
+Technically, I’m strong with React Hooks, Context API, Redux, and Next.js for SSR, and I focus on clean code that improves performance and developer productivity.
 
 I’ve also been involved in API design discussions, and I’m currently upskilling in Node.js to become a well-rounded full-stack engineer while continuing to drive frontend best practices."
 

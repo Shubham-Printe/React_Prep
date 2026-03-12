@@ -45,10 +45,31 @@ When you need to go through a list.
 | :--- | :--- | :--- | :--- |
 | **`map`** | You want to **transform** every item into something else (1:1 ratio). | New Array | `[1, 2].map(x => x * 2)` → `[2, 4]` |
 | **`filter`** | You want to **remove** items based on a condition. | New Array | `[1, 2, 3].filter(x => x > 1)` → `[2, 3]` |
-| **`reduce`** | You want to **combine** all items into a single value (number, object, or another array). | Anything | Summing numbers, or converting Array → Object. |
+| **`reduce`** | You want to **combine** all items into a single value (number, object, or another array). | Anything | Group kitchen items by category → `{ fruits: [...], veggies: [...], sweets: [...] }`. |
 | **`forEach`** | You just want to **do something** (side effect) and don't care about a return value. | `undefined` | Logging items, or pushing to an external array manually. |
 
+**`reduce` example — array of kitchen items → object by category:**
+```javascript
+const kitchen = [
+  { name: "apple", category: "fruits" },
+  { name: "carrot", category: "veggies" },
+  { name: "cake", category: "sweets" },
+  { name: "banana", category: "fruits" },
+];
+const byCategory = kitchen.reduce((acc, item) => {
+  const cat = item.category;
+  if (!acc[cat]) acc[cat] = [];
+  acc[cat].push(item);
+  return acc;
+}, {});
+// → { fruits: [{ name: "apple", ... }, { name: "banana", ... }], veggies: [...], sweets: [...] }
+```
+
 **Pro Tip:** In modern JS, `for...of` loops are often cleaner than `forEach` if you want to use `break` or `continue`.
+
+- **`break`** — exits the loop entirely (no more iterations). Use when you've found what you need or hit a condition that means "stop looping."
+- **`continue`** — skips the rest of the current iteration and moves to the next item. Use when you want to ignore certain items but keep going.
+- **Why not in `forEach`?** `break` and `continue` only work in normal `for` / `for...of` / `for...in` loops. Inside `forEach` you're inside a callback function, so `break`/`continue` would apply to that function, not the loop — and you can't "break" a loop from inside a callback. Use `for...of` (or a plain `for` loop) when you need to exit early or skip iterations.
 
 ### B. Searching
 When you need to find something inside.
