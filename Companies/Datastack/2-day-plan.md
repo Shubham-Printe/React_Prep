@@ -1,0 +1,17 @@
+# 2-Day Plan (Level 1 Focus)
+
+## Day 1 - Core React + State + JS (10 Hours)
+- React fundamentals, hooks, and component patterns (2h)
+- State management: Redux/RTK, Context API, MobX — when to use which (2h)
+- JavaScript deep dive: ES6+, closures, event loop, async (1.5h)
+- Reusable components and front-end library design (1.5h)
+- RESTful APIs and async integration patterns (1.5h)
+- Flash review: interview question bank (1.5h)
+
+## Day 2 - Quality + Performance + Leadership (10 Hours)
+- Code quality, coding standards, and code review best practices (1.5h)
+- Performance optimization and build tools (Webpack, Babel, npm/yarn) (2h)
+- Testing (Jest/RTL), debugging, and problem-solving (2h)
+- Technical leadership: guiding React devs, best practices, ownership (1h)
+- Mock Level 1 interview (technical + behavioral) and review (2h)
+- Company brief + your intro and stories (1.5h)
