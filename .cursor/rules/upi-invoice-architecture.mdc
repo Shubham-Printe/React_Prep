@@ -1,0 +1,26 @@
+---
+description: App structure and architecture conventions
+globs: Apps/upi-invoice-follow-up/**/*
+alwaysApply: false
+---
+
+# Architecture & Folder Structure
+
+- **App boundaries**
+  - `src/app/` — routes/pages (Next.js)
+  - `src/components/` — reusable UI components
+  - `src/features/<feature>/` — feature modules (invoice, clients, settings)
+  - `src/server/` — server actions, API handlers, DB access
+  - `src/lib/` — shared utilities (pure, no framework coupling)
+  - `src/config/` — limits, tier rules, environment parsing
+  - `src/types/` — shared TS types
+- **Feature module convention**
+  - `model.ts` (types + domain logic)
+  - `service.ts` (orchestration; calls DB/external)
+  - `ui/` (feature UI components)
+  - `__tests__/` (unit tests close to feature)
+- **Data access**
+  - No raw DB calls from UI components; go through `src/server/*`.
+- **Environment**
+  - Centralize env parsing in one place; no `process.env.X` scattered.
+

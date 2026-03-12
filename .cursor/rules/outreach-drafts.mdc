@@ -1,0 +1,25 @@
+---
+description: Add readiness tags to outreach emails and messages
+globs: **/outreach*.md,**/linkedin*.md,**/cover-letter*.md
+alwaysApply: false
+---
+
+# Outreach Draft Readiness
+
+When drafting outreach emails, LinkedIn messages, cover letters, or similar communications:
+
+**Always add a `Readiness` tag** at the top indicating how ready the draft is to send:
+
+- **100%** — Ready to send (no placeholders, no edits needed)
+- **~90%** — Minor edits needed (e.g., fill [X] years, recipient name)
+- **~75%** — Several placeholders or sections to personalize
+- **~50%** — Draft skeleton; needs substantial content
+
+Format: `**Readiness:** X% — Brief note on what remains (if any).`
+
+Example:
+```
+**Readiness:** ~90% — Replace `[X] years` with your actual experience before sending.
+```
+
+**Proactively ask for missing info.** The user tends not to review drafts again after taking them—so before handing off a draft that isn't 100% ready, explicitly ask: "To make this 100% ready: [list what's needed]. Can you share [X]?" Fill in the answers and update the draft to 100% before they copy it.

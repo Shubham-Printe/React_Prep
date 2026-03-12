@@ -1,0 +1,24 @@
+---
+description: Testing and quality gates for core features
+globs: Apps/upi-invoice-follow-up/**/*
+alwaysApply: false
+---
+
+# Testing Standards
+
+- **Rule**: every core feature must have tests.
+- **Test pyramid**
+  - **Unit**: pure functions (calculations, formatting, template rendering)
+  - **Integration**: server handlers + DB (in-memory or test DB)
+  - **E2E**: “create invoice → public link → PDF/download → copy follow-up”
+- **What is “core” for MVP**
+  - invoice totals math
+  - public invoice access rules
+  - PDF export path (client-side behavior)
+  - UPI QR payload generation
+  - follow-up template variable substitution
+- **Quality gates**
+  - No skipped tests for core paths
+  - Fix flaky tests immediately
+  - Prefer deterministic tests (freeze time, stable IDs)
+

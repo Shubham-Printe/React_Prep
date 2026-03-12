@@ -1,0 +1,23 @@
+---
+description: Core engineering standards for the UPI invoice app
+globs: Apps/upi-invoice-follow-up/**/*
+alwaysApply: false
+---
+
+# UPI Invoice App — Core Standards
+
+- **Goal**: ship a reliable product with tests for core features, while keeping **fixed costs at ₹0 until revenue**.
+- **Language**: TypeScript everywhere; prefer strict types over `any`.
+- **Naming**
+  - **Files/folders**: `kebab-case`
+  - **React components**: `PascalCase.tsx`
+  - **Functions/vars**: `camelCase`
+  - **Constants**: `SCREAMING_SNAKE_CASE`
+  - **Booleans**: `is/has/can/should` prefixes
+- **Code style**
+  - Small functions, pure where possible
+  - No “magic numbers” for business rules; centralize in `src/config/`
+  - Prefer explicit return types for exported functions
+- **No secrets in repo**: never commit `.env*`; use `.env.example`.
+- **Cost rule**: no paid services or monthly plans until we have revenue; prefer free-tier or pay-per-use.
+
