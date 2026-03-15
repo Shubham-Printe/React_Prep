@@ -21,6 +21,7 @@ This folder contains **full preparation** for the final round: **technical** (co
 | 5 | **06-offer-stage-salary-and-early-release.md** | **Offer stage:** Lock salary before documents, “steep raise” script, early-release plan |
 | 6 | **07-early-release-playbook.md** | **Early release:** Step-by-step plan to secure 30–45 days (handover, script, buyout, what to tell Atlas Copco) |
 | 7 | **08-document-submission-pack.md** | **Document submission:** Zip structure, email body, cover letter (company name changes + Dogra) |
+| 8 | **09-offer-19.5-negotiation.md** | **Offer 19.5 LPA:** One-shot ask (20 fixed or sign-on), hiring-freeze context, accept or walk |
 
 ---
 
