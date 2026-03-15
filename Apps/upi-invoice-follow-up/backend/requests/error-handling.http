@@ -1,0 +1,32 @@
+###
+GET http://localhost:4000/api/v1/nonexistent
+
+### Response
+HTTP/1.1 404 Not Found
+Content-Type: application/json
+
+{
+    "error": {
+        "code": "NOT_FOUND",
+        "message": "Route not found",
+        "requestId": "..."
+    }
+}
+
+###
+
+### Internal error (500)
+GET http://localhost:4000/api/v1/trigger-error
+
+### Response
+HTTP/1.1 500 Internal Server Error
+Content-Type: application/json
+Cache-Control: no-store
+
+{
+    "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "An unexpected error occurred",
+        "requestId": "..."
+    }
+}

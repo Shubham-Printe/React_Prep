@@ -1,0 +1,68 @@
+{
+  // TypeScript config for a Node.js backend (ESM) that compiles to `dist/`.
+  // This file is part of Phase 0 bootstrap: it ensures "dev" runs TS directly,
+  // while "build/start" run compiled JS output (production-like).
+  "compilerOptions": {
+    // --- File layout / emit ---
+    // We author TypeScript in `src/` and compile output to `dist/`.
+    "rootDir": "./src",
+    "outDir": "./dist",
+
+    // --- Runtime target ---
+    // "target" controls which JS syntax TS emits.
+    // ES2022 is a good baseline for Node 20 (modern syntax, smaller output).
+    "target": "ES2022",
+
+    // "lib" controls the *type definitions* available during compilation.
+    // For a backend service, we don't need DOM types; we want standard JS types.
+    "lib": ["ES2022"],
+
+    // --- Module system (ESM) ---
+    // We chose ESM for this project (`package.json` has `"type": "module"`).
+    // "NodeNext" matches Node's ESM/CJS rules and how `.ts/.mts/.cts` map.
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    // Tell TS to include Node's global types (`process`, `Buffer`, etc.).
+    // Without this, backend code can error on Node globals.
+    "types": ["node"],
+
+    // --- Debuggability ---
+    // Emit source maps so stack traces can map back to TypeScript in development.
+    "sourceMap": true,
+
+    // --- Type safety / correctness ---
+    // Treat `obj[key]` as possibly undefined unless you've checked it.
+    "noUncheckedIndexedAccess": true,
+
+    // Makes optional properties precise (helps avoid "undefined" surprises).
+    "exactOptionalPropertyTypes": true,
+
+    // Baseline strictness (highly recommended for backend code).
+    "strict": true,
+
+    // --- ESM import/export semantics ---
+    // Prevent TS from rewriting import/export syntax in ways that don't match Node ESM.
+    // This avoids subtle runtime issues when moving between dev (tsx) and build (node).
+    "verbatimModuleSyntax": true,
+
+    // Ensure every file can be transpiled independently (important for ESM tooling).
+    // Also forces you to use `import type` where needed.
+    "isolatedModules": true,
+
+    // Warn about imports that only exist for side effects (helps catch accidental loads).
+    "noUncheckedSideEffectImports": true,
+
+    // Be explicit about what is a "module" vs "script" (avoids mixed-mode surprises).
+    "moduleDetection": "force",
+
+    // Speed: don't type-check `.d.ts` files inside dependencies.
+    // Fine for most apps; if you hit weird type issues, you can temporarily disable it.
+    "skipLibCheck": true
+  },
+
+  // Only compile production source code.
+  // Tests run via Vitest/tsx and don't need to be part of the production build output.
+  "include": ["src/**/*.ts"],
+  "exclude": ["test", "node_modules", "dist"]
+}

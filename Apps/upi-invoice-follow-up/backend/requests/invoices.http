@@ -1,0 +1,34 @@
+### Create invoice (with optional dueDate)
+POST http://localhost:4000/api/v1/invoices
+Content-Type: application/json
+
+{
+    "amount": 100,
+    "description": "Test invoice",
+    "dueDate": "2026-03-12T12:00:00Z"
+}
+
+### Create invoice (without dueDate – no trailing comma)
+POST http://localhost:4000/api/v1/invoices
+Content-Type: application/json
+
+{
+    "amount": 100,
+    "description": "Test invoice"
+}
+
+### Response
+HTTP/1.1 201 Created
+Content-Type: application/json
+
+### Invoices list (default page/limit)
+GET http://localhost:4000/api/v1/invoices
+Content-Type: application/json
+
+### Invoices list (page 2, limit 10)
+GET http://localhost:4000/api/v1/invoices?page=2&limit=10
+Content-Type: application/json
+
+### Invoices list (status filter)
+GET http://localhost:4000/api/v1/invoices?status=paid
+Content-Type: application/json
