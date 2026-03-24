@@ -1,0 +1,55 @@
+# -----------------------------------------------------------------------------
+# CI workflow
+# - Runs on every push and pull_request to main.
+# - Steps: checkout → Node → npm ci → lint → test → build.
+# - Reports status to Vercel (ci-build-and-test) so Vercel Deployment Checks
+#   can block production promotion until this workflow succeeds.
+# -----------------------------------------------------------------------------
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    # Allow checkout (read repo) and writing commit statuses (for Vercel check).
+    permissions:
+      contents: read
+      statuses: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test:ci
+
+      - name: Build
+        run: npm run build
+
+      # Report this job's result to GitHub as a commit status named "ci-build-and-test".
+      # Vercel Deployment Checks (Project → Settings → Deployment Checks) use this
+      # to block production promotion until the check passes.
+      - name: Notify Vercel
+        if: always()
+        uses: vercel/repository-dispatch/actions/status@v1
+        with:
+          name: "ci-build-and-test"

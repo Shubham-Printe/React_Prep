@@ -2,6 +2,9 @@
 
 import { useGame } from '@/contexts/GameContext';
 import { useState } from 'react';
+import { ChipStack, PotChipPile } from '@/components/poker/ChipStack';
+import { RoundPokerTable } from '@/components/poker/RoundPokerTable';
+import { SeatMotion } from '@/components/poker/SeatMotion';
 
 const STREETS: Record<string, string> = {
   blinds: 'Blinds',
@@ -37,13 +40,13 @@ export function PokerTable() {
     activePlayer.currentBet === 0 &&
     !activePlayer.folded &&
     isBlinds;
-  const canAct =
+  const showBettingPanel =
     activePlayer &&
     !activePlayer.folded &&
     !activePlayer.outOfGame &&
     table.street !== 'showdown' &&
-    table.street !== 'blinds' &&
-    !table.bettingCompleteThisStreet;
+    table.street !== 'blinds';
+  const canAct = showBettingPanel && !table.bettingCompleteThisStreet;
   const atShowdownWithPot = table.street === 'showdown' && table.pot > 0;
   const inHand = players.filter((p) => !p.folded && !p.outOfGame);
   const blindAmount = rules.bigBlind;
@@ -83,79 +86,77 @@ export function PokerTable() {
         </button>
       </div>
 
-      {/* Pot & street */}
-      <div className="card-felt flex flex-wrap items-center justify-between gap-4 p-5">
-        <div className="flex items-baseline gap-3">
-          <span className="text-sm font-medium uppercase tracking-wider text-slate-400">Pot</span>
-          <span className="text-3xl font-bold tabular-nums text-amber-400 drop-shadow-sm">{table.pot}</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="badge rounded-lg bg-slate-700/90 px-3 py-1.5 text-slate-200">
-            {STREETS[table.street]}
-          </span>
-          {table.street !== 'showdown' && table.street !== 'blinds' && (
-            <>
-              {table.bettingCompleteThisStreet && (
-                <span className="text-sm text-slate-400">Betting complete —</span>
-              )}
-              <button
-                type="button"
-                onClick={nextStreet}
-                className="rounded-lg bg-slate-600/90 px-3 py-1.5 text-sm font-medium text-slate-100 transition hover:bg-slate-500"
-              >
-                Next street →
-              </button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Players */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {players.map((p, i) => (
+      {/* Round table: pot in center, players in seats with chip stacks */}
+      <RoundPokerTable
+        players={players}
+        actionOnIndex={actionIndex}
+        centerContent={
           <div
-            key={p.id}
-            className={`card p-4 transition ${
-              p.outOfGame
-                ? 'opacity-50'
-                : i === actionIndex && !p.folded
-                  ? 'border-emerald-500/80 bg-emerald-950/40 ring-2 ring-emerald-500/50'
-                  : p.folded
-                    ? 'opacity-70'
-                    : ''
+            className={`flex max-h-full w-full flex-col items-center justify-center px-1 sm:px-2 ${
+              players.length >= 9 ? 'scale-90 gap-1 sm:gap-2' : players.length >= 6 ? 'gap-1.5 sm:gap-2.5' : 'gap-2 sm:gap-3'
             }`}
           >
-            <div className="mb-3 flex items-center justify-between">
-              <span className="font-semibold text-slate-100">{p.name}</span>
-              <span className="flex flex-wrap gap-1.5">
-                {p.outOfGame && (
-                  <span className="badge bg-slate-600 text-slate-300">Out</span>
-                )}
-                {!p.outOfGame && p.isDealer && (
-                  <span className="badge bg-slate-600 text-slate-200">D</span>
-                )}
-                {p.isSmallBlind && (
-                  <span className="badge bg-amber-900/70 text-amber-300">SB</span>
-                )}
-                {p.isBigBlind && (
-                  <span className="badge bg-amber-900/70 text-amber-300">BB</span>
-                )}
-                {p.folded && (
-                  <span className="badge bg-red-900/50 text-red-300">Folded</span>
-                )}
+            <PotChipPile pot={table.pot} />
+            <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+              <span className="badge rounded-md bg-slate-800/90 px-2 py-1 text-[10px] text-slate-200 sm:rounded-lg sm:px-3 sm:py-1.5 sm:text-xs">
+                {STREETS[table.street]}
               </span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Stack</span>
-              <span className="font-mono font-medium tabular-nums text-slate-100">{p.stack}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-slate-400">Bet this street</span>
-              <span className="font-mono font-medium tabular-nums text-amber-400">{p.currentBet}</span>
+              {table.street !== 'showdown' && table.street !== 'blinds' && (
+                <>
+                  {table.bettingCompleteThisStreet && (
+                    <span className="hidden text-[10px] text-slate-400 sm:inline sm:text-xs">Betting complete —</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={nextStreet}
+                    className="rounded-md bg-slate-700/95 px-2 py-1 text-[10px] font-medium text-slate-100 transition hover:bg-slate-600 sm:rounded-lg sm:px-3 sm:py-1.5 sm:text-sm"
+                  >
+                    Next street →
+                  </button>
+                </>
+              )}
             </div>
           </div>
-        ))}
-      </div>
+        }
+        renderSeat={(p, i, isActive) => (
+          <SeatMotion stack={p.stack} currentBet={p.currentBet} folded={p.folded}>
+          <div
+            className={`card border-slate-600/80 shadow-xl transition ${
+              players.length >= 9 ? 'p-1.5 sm:p-2' : players.length >= 6 ? 'p-2 sm:p-2.5' : 'p-2 sm:p-3'
+            } ${p.outOfGame ? 'opacity-50' : ''} ${p.folded ? 'opacity-70' : ''} ${
+              isActive ? 'border-emerald-500/90 bg-emerald-950/50 ring-2 ring-emerald-400/70' : ''
+            }`}
+          >
+            <div
+              className={`flex flex-col items-center ${players.length >= 9 ? 'gap-1 sm:gap-1.5' : 'gap-1.5 sm:gap-2'}`}
+            >
+              <ChipStack amount={p.stack} label="Stack" size="sm" />
+              {p.currentBet > 0 ? (
+                <ChipStack amount={p.currentBet} label="Bet" size="sm" />
+              ) : (
+                <div className="h-8" aria-hidden />
+              )}
+              <div className="w-full min-w-0 border-t border-slate-600/50 pt-1.5 text-center">
+                <span className="block truncate text-[11px] font-semibold text-slate-100 sm:text-xs">{p.name}</span>
+                <span className="mt-1 flex flex-wrap justify-center gap-0.5">
+                  {p.outOfGame && <span className="badge bg-slate-600 text-[9px] text-slate-300">Out</span>}
+                  {!p.outOfGame && p.isDealer && (
+                    <span className="badge bg-slate-600 text-[9px] text-slate-200">D</span>
+                  )}
+                  {p.isSmallBlind && (
+                    <span className="badge bg-amber-900/70 text-[9px] text-amber-300">SB</span>
+                  )}
+                  {p.isBigBlind && (
+                    <span className="badge bg-amber-900/70 text-[9px] text-amber-300">BB</span>
+                  )}
+                  {p.folded && <span className="badge bg-red-900/50 text-[9px] text-red-300">Folded</span>}
+                </span>
+              </div>
+            </div>
+          </div>
+          </SeatMotion>
+        )}
+      />
 
       {/* Blinds: Place Blind or Fold (simulate who stays in) */}
       {canActBlinds && (
@@ -183,17 +184,32 @@ export function PokerTable() {
         </div>
       )}
 
-      {/* Actions (for current player) */}
-      {canAct && (
-        <div className="card p-5">
+      {/* Actions (for current player) — keep mounted when round complete to avoid layout jump */}
+      {showBettingPanel && (
+        <div
+          className={`card p-5 transition-opacity ${!canAct ? 'opacity-60' : ''}`}
+          aria-busy={!canAct}
+        >
           <p className="mb-4 text-sm text-slate-400">
-            <strong className="text-slate-100">{activePlayer.name}</strong> to act
+            {canAct ? (
+              <>
+                <strong className="text-slate-100">{activePlayer.name}</strong> to act
+              </>
+            ) : (
+              <>
+                <strong className="text-slate-100">{activePlayer.name}</strong>
+                <span className="block text-slate-500">
+                  Betting complete — use <strong className="text-slate-400">Next street</strong> on the table.
+                </span>
+              </>
+            )}
           </p>
-          <div className="flex flex-wrap items-center gap-3">
+          <div className={`flex flex-wrap items-center gap-3 ${!canAct ? 'pointer-events-none' : ''}`}>
             <button
               type="button"
               onClick={() => fold(actionIndex)}
-              className="rounded-xl border border-red-800/60 bg-red-900/50 px-4 py-2.5 text-sm font-semibold text-red-200 transition hover:bg-red-900/70"
+              disabled={!canAct}
+              className="rounded-xl border border-red-800/60 bg-red-900/50 px-4 py-2.5 text-sm font-semibold text-red-200 transition hover:bg-red-900/70 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Fold
             </button>
@@ -202,7 +218,8 @@ export function PokerTable() {
                 <button
                   type="button"
                   onClick={() => check(actionIndex)}
-                  className="btn-secondary"
+                  disabled={!canAct}
+                  className="btn-secondary disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Check
                 </button>
@@ -211,7 +228,7 @@ export function PokerTable() {
                     <button
                       type="button"
                       onClick={stepBetDown}
-                      disabled={betAmount <= minBet}
+                      disabled={!canAct || displayBetTotal <= minBet}
                       className="flex h-10 w-10 items-center justify-center rounded-l-xl text-slate-300 transition hover:bg-slate-600 disabled:opacity-40 disabled:hover:bg-transparent"
                       aria-label="Decrease bet"
                     >
@@ -223,7 +240,7 @@ export function PokerTable() {
                     <button
                       type="button"
                       onClick={stepBetUp}
-                      disabled={displayBetTotal >= maxBetRounded}
+                      disabled={!canAct || displayBetTotal >= maxBetRounded}
                       className="flex h-10 w-10 items-center justify-center rounded-r-xl text-slate-300 transition hover:bg-slate-600 disabled:opacity-40 disabled:hover:bg-transparent"
                       aria-label="Increase bet"
                     >
@@ -233,7 +250,8 @@ export function PokerTable() {
                   <button
                     type="button"
                     onClick={() => handleBet(displayBetTotal)}
-                    className="btn-primary bg-emerald-600 hover:bg-emerald-500"
+                    disabled={!canAct}
+                    className="btn-primary bg-emerald-600 hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Bet
                   </button>
@@ -244,7 +262,8 @@ export function PokerTable() {
                 <button
                   type="button"
                   onClick={() => handleBet(table.currentMaxBet)}
-                  className="btn-secondary"
+                  disabled={!canAct}
+                  className="btn-secondary disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Call {callAmount}
                 </button>
@@ -253,7 +272,7 @@ export function PokerTable() {
                     <button
                       type="button"
                       onClick={stepRaiseDown}
-                      disabled={displayRaiseBy <= minRaiseBy}
+                      disabled={!canAct || displayRaiseBy <= minRaiseBy}
                       className="flex h-10 w-10 items-center justify-center rounded-l-xl text-slate-300 transition hover:bg-slate-600 disabled:opacity-40 disabled:hover:bg-transparent"
                       aria-label="Decrease raise by"
                     >
@@ -265,7 +284,7 @@ export function PokerTable() {
                     <button
                       type="button"
                       onClick={stepRaiseUp}
-                      disabled={displayRaiseBy >= maxRaiseByRounded}
+                      disabled={!canAct || displayRaiseBy >= maxRaiseByRounded}
                       className="flex h-10 w-10 items-center justify-center rounded-r-xl text-slate-300 transition hover:bg-slate-600 disabled:opacity-40 disabled:hover:bg-transparent"
                       aria-label="Increase raise by"
                     >
@@ -275,12 +294,12 @@ export function PokerTable() {
                   <button
                     type="button"
                     onClick={handleRaise}
-                    disabled={raiseAtCap || !canRaise}
+                    disabled={!canAct || raiseAtCap || !canRaise}
                     className="btn-primary bg-emerald-600 hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Raise by
                   </button>
-                  {(raiseAtCap || !canRaise) && (
+                  {(raiseAtCap || !canRaise) && canAct && (
                     <span className="text-xs text-slate-500">
                       {raiseAtCap ? 'Max raises this street' : 'Cannot min-raise'}
                     </span>

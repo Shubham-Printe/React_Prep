@@ -39,6 +39,7 @@ This folder is a **step-wise guide** to build an industry-standard backend serve
 - **Phase 2 — Validation-first endpoints** (Zod + 422 errors): [`03-phase-2-validation.md`](./03-phase-2-validation.md)
 - **Phase 2.5 — API design basics** (versioning + pagination): [`03b-phase-2-api-design.md`](./03b-phase-2-api-design.md)
 - **Phase 3 — Service layer + repositories** (no DB yet): [`04-phase-3-service-repo.md`](./04-phase-3-service-repo.md)
+- **Phase 3 tests** (unit + integration, code snippets): [`04b-phase-3-tests.md`](./04b-phase-3-tests.md)
 - **Phase 4 — Persistence** (Prisma + migrations): [`05-phase-4-persistence.md`](./05-phase-4-persistence.md)
 - **Phase 5 — Auth + authorization**: [`06-phase-5-auth.md`](./06-phase-5-auth.md)
 - **Phase 6 — Security + resilience** (rate limit, headers, sanitization): [`07-phase-6-security-resilience.md`](./07-phase-6-security-resilience.md)

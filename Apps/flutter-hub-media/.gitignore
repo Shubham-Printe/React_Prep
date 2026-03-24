@@ -1,0 +1,12 @@
+# Flutter
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+.idea/
+*.lock
+
+# Omit lock only if you prefer — uncomment to ignore pubspec.lock for libraries
+# pubspec.lock

@@ -1,0 +1,343 @@
+'use client';
+
+import { motion } from 'framer-motion';
+import { 
+  Box, 
+  Typography, 
+  TextField,
+  Card,
+  CardContent,
+  Stack,
+  Alert,
+  Snackbar
+} from '@mui/material';
+import { useState } from 'react';
+import { useTheme as useCustomTheme } from '@/contexts/ThemeContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useBranding } from '@/hooks/usePortfolioData';
+import AnimatedButton from '@/components/ui/AnimatedButton';
+import { emailService, ContactFormData } from '@/services/emailService';
+
+interface FormData extends ContactFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  subject: string;
+  message: string;
+}
+
+interface FormErrors {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  subject?: string;
+  message?: string;
+}
+
+export default function ContactForm() {
+  const { mode } = useCustomTheme();
+  const { t } = useLanguage();
+  const branding = useBranding();
+
+  const [formData, setFormData] = useState<FormData>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    subject: '',
+    message: '',
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showError, setShowError] = useState(false);
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateField = (name: keyof FormData, value: string): string | undefined => {
+    switch (name) {
+      case 'firstName':
+        if (!value.trim()) return t('contact.validation.firstName.required');
+        if (value.trim().length < 2) return t('contact.validation.firstName.minLength');
+        if (value.trim().length > 50) return t('contact.validation.firstName.maxLength');
+        return undefined;
+      
+      case 'lastName':
+        if (!value.trim()) return t('contact.validation.lastName.required');
+        if (value.trim().length < 2) return t('contact.validation.lastName.minLength');
+        if (value.trim().length > 50) return t('contact.validation.lastName.maxLength');
+        return undefined;
+      
+      case 'email':
+        if (!value.trim()) return t('contact.validation.email.required');
+        if (!validateEmail(value)) return t('contact.validation.email.invalid');
+        return undefined;
+      
+      case 'subject':
+        if (!value.trim()) return t('contact.validation.subject.required');
+        if (value.trim().length < 5) return t('contact.validation.subject.minLength');
+        if (value.trim().length > 100) return t('contact.validation.subject.maxLength');
+        return undefined;
+      
+      case 'message':
+        if (!value.trim()) return t('contact.validation.message.required');
+        if (value.trim().length < 10) return t('contact.validation.message.minLength');
+        if (value.trim().length > 1000) return t('contact.validation.message.maxLength');
+        return undefined;
+      
+      default:
+        return undefined;
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    let isValid = true;
+
+    Object.keys(formData).forEach((key) => {
+      const fieldName = key as keyof FormData;
+      const error = validateField(fieldName, formData[fieldName]);
+      if (error) {
+        newErrors[fieldName] = error;
+        isValid = false;
+      }
+    });
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleInputChange = (field: keyof FormData) => (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const value = event.target.value;
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const handleBlur = (field: keyof FormData) => () => {
+    const error = validateField(field, formData[field]);
+    setErrors(prev => ({ ...prev, [field]: error }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      const result = await emailService.sendContactEmail(formData);
+      
+      if (result.success) {
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          subject: '',
+          message: '',
+        });
+        setShowSuccess(true);
+      } else {
+        setShowError(true);
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      setShowError(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <motion.div
+        initial={{ opacity: 0, x: 30 }}
+        whileInView={{ opacity: 1, x: 0 }}
+        viewport={{ once: true, margin: '-100px 0px -100px 0px' }}
+        transition={{ duration: 0.8, delay: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
+        <Card
+          sx={{
+            background: mode === 'dark' 
+              ? 'rgba(255, 255, 255, 0.05)'
+              : 'rgba(255, 255, 255, 0.8)',
+            backdropFilter: 'blur(20px)',
+            border: mode === 'dark' 
+              ? '1px solid rgba(255, 255, 255, 0.1)'
+              : '1px solid rgba(255, 255, 255, 0.2)',
+            borderRadius: 3,
+            p: 4,
+          }}
+        >
+          <CardContent sx={{ p: 0 }}>
+            <form onSubmit={handleSubmit}>
+              <Stack spacing={3}>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                    gap: 3,
+                  }}
+                >
+                  <TextField
+                    label={t('contact.form.firstName')}
+                    value={formData.firstName}
+                    onChange={handleInputChange('firstName')}
+                    onBlur={handleBlur('firstName')}
+                    error={!!errors.firstName}
+                    helperText={errors.firstName}
+                    required
+                    fullWidth
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                      },
+                    }}
+                  />
+                  
+                  <TextField
+                    label={t('contact.form.lastName')}
+                    value={formData.lastName}
+                    onChange={handleInputChange('lastName')}
+                    onBlur={handleBlur('lastName')}
+                    error={!!errors.lastName}
+                    helperText={errors.lastName}
+                    required
+                    fullWidth
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        borderRadius: 2,
+                      },
+                    }}
+                  />
+                </Box>
+
+                <TextField
+                  label={t('contact.form.email')}
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange('email')}
+                  onBlur={handleBlur('email')}
+                  error={!!errors.email}
+                  helperText={errors.email}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+
+                <TextField
+                  label={t('contact.form.subject')}
+                  value={formData.subject}
+                  onChange={handleInputChange('subject')}
+                  onBlur={handleBlur('subject')}
+                  error={!!errors.subject}
+                  helperText={errors.subject}
+                  required
+                  fullWidth
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+
+                <TextField
+                  label={t('contact.form.message')}
+                  value={formData.message}
+                  onChange={handleInputChange('message')}
+                  onBlur={handleBlur('message')}
+                  error={!!errors.message}
+                  helperText={errors.message}
+                  required
+                  fullWidth
+                  multiline
+                  rows={4}
+                  variant="outlined"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                    },
+                  }}
+                />
+
+                <AnimatedButton
+                  type="submit"
+                  variant="contained"
+                  disabled={isSubmitting}
+                  sx={{
+                    background: branding.gradients.contact,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                    py: 2,
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #7C3AED 0%, #DB2777 100%)',
+                    },
+                    '&:disabled': {
+                      background: mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                      color: mode === 'dark' ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                    },
+                  }}
+                  hoverScale={1.02}
+                  rippleColor="rgba(255, 255, 255, 0.3)"
+                >
+                  {isSubmitting ? t('contact.form.submitting') : t('contact.form.submit')}
+                </AnimatedButton>
+              </Stack>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Success/Error Snackbars */}
+      <Snackbar
+        open={showSuccess}
+        autoHideDuration={6000}
+        onClose={() => setShowSuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setShowSuccess(false)}
+          severity="success"
+          sx={{ width: '100%' }}
+        >
+          {t('contact.form.success')}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={showError}
+        autoHideDuration={6000}
+        onClose={() => setShowError(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setShowError(false)}
+          severity="error"
+          sx={{ width: '100%' }}
+        >
+          {t('contact.form.error')}
+        </Alert>
+      </Snackbar>
+    </>
+  );
+}

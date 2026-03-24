@@ -1,84 +1,31 @@
 /// <reference path="./types/fastify.ts" />
+/**
+ * App factory: builds the Fastify instance and wires config, hooks, handlers, and routes.
+ * See backend/README.md for what each folder under src/ contains.
+ */
 import Fastify from "fastify";
-import { randomUUID } from "node:crypto";
-import { ERROR_CODES, errorResponse } from "./errors/error-response.js";
+import { fastifyOptions } from "./config/fastify.js";
+import { globalErrorHandler } from "./http/global-error-handler.js";
+import { notFoundHandler } from "./http/not-found-handler.js";
+import { requestIdHook } from "./http/request-id-hook.js";
+import { responseLogHook } from "./http/response-log-hook.js";
 import v1Routes from "./routes/v1.js";
 
-
-function normalizeRequestId(raw: unknown): string | null {
-    if (typeof raw !== "string") return null;
-  
-    const value = raw.trim();
-    if (value.length < 8 || value.length > 128) return null;
-    if (!/^[a-zA-Z0-9._-]+$/.test(value)) return null;
-  
-    return value;
-}
-
-function generateRequestId(): string {
-    return randomUUID();
-}
-
-
 export const createApp = async () => {
-  const app = Fastify({
-    logger: true,
-    // Reads inbound request id from this header (if present)
-    requestIdHeader: "x-request-id",
-    // Single source of truth becomes `request.id`
-    genReqId: (req) => {
-      // check if the request id is availabel and valid
-      const fromHeader = normalizeRequestId(req.headers["x-request-id"]);
-      // if the request id is not availabel or valid, generate a new one
-      return fromHeader ?? generateRequestId();
-    },
-  });
+  // Create app with shared options (logger, request id header, id generation)
+  const app = Fastify(fastifyOptions);
 
-  // Always echo request id back to the client and record start time for duration
-  app.addHook("onRequest", async (request, reply) => {
-    request.startAt = Date.now();
-    reply.header("x-request-id", request.id);
-  });
+  // Run on every request: set start time, echo x-request-id to client
+  app.addHook("onRequest", requestIdHook);
+  // Run after every response: log request id, method, path, status, duration
+  app.addHook("onResponse", responseLogHook);
 
-  app.addHook("onResponse", async (request, reply) => {
-    // log the request id, method, path, status, duration
-    app.log.info({
-      requestId: request.id,
-      method: request.method,
-      path: request.url,
-      status: reply.statusCode,
-      duration: request.startAt != null ? Date.now() - request.startAt : 0,
-    });
-  })
+  // No matching route: log and return 404 JSON
+  app.setNotFoundHandler(notFoundHandler);
+  // Uncaught errors: log and return 500 JSON
+  app.setErrorHandler(globalErrorHandler);
 
-  // Register a not-found handler
-  app.setNotFoundHandler((request, reply) => {
-    request.log.info({
-      requestId: request.id,
-      method: request.method,
-      url: request.url
-    }, "route not found");
-
-    const r = errorResponse(ERROR_CODES.NOT_FOUND, "Route not found", request.id);
-    reply.status(r.statusCode).send(r.body);
-  })
-
-  // Register a global error handler
-  app.setErrorHandler((error, request, reply) => {
-    // log the request id, method, path, status, duration
-    request.log.error(
-      { err: error, requestId: request.id, method: request.method, url: request.url },
-      "request error"
-    );
-
-    const r = errorResponse(ERROR_CODES.INTERNAL_ERROR, "An unexpected error occurred", request.id);
-
-    reply
-      .header("Cache-Control", "no-store")
-      .status(r.statusCode)
-      .send(r.body);
-  })
-
+  // Mount API v1 routes under /api/v1 (e.g. /api/v1/invoices)
   await app.register(v1Routes, { prefix: "/api/v1" });
 
   return app;

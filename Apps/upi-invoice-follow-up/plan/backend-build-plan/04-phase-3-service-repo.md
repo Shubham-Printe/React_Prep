@@ -19,10 +19,13 @@ Separate concerns cleanly:
 #### Step 3.1 — Define module boundaries
 
 Create a module folder per domain area, e.g. `invoice/`:
-- `model.ts` (types + pure functions)
-- `service.ts` (orchestration)
-- `repo.ts` (interface)
-- `repo-memory.ts` (in-memory implementation)
+- **`model.ts`** — **What an invoice is and how to build one.** 
+Types (e.g. `Invoice`, `InvoiceStatus`) and pure helpers (e.g. “build an invoice from this input and these ids/timestamps”). No HTTP, no database. Just the shape of the data and simple, testable functions.
+- **`service.ts`** — **The “use cases” for invoices.** “Create an invoice”, “get by id”, “list with pagination”, “mark as paid”. It receives a repository (injected) and calls it. It does **not** know whether data lives in memory, in a DB, or in a file. That keeps business rules in one place and easy to test without starting a server or a DB.
+- **`repo.ts`** — **The contract for “where invoices are stored”.** 
+Only the **interface** (the list of methods: create, getById, list, markPaid, etc.). 
+No implementation. Any code that implements this contract (in-memory now, Prisma later) can be swapped in without changing the service.
+- **`repo-memory.ts`** — **A real implementation of that contract using RAM.** Stores invoices in a `Map` (or similar) so you can run and test the full flow without a database. Later you add `repo-prisma.ts` (or similar) that implements the same interface against a real DB; the service stays unchanged.
 
 **Done when**
 - services have zero imports from HTTP framework
@@ -122,7 +125,7 @@ export function createInvoiceService(deps: { repo: InvoiceRepository }) {
 export type InvoiceService = ReturnType<typeof createInvoiceService>;
 ```
 
-5. **Add `repo-memory.ts`** — stub that implements `InvoiceRepository`. For Step 3.1 a minimal stub (e.g. `create` throws "not implemented") is enough; full implementation is Step 3.3.
+5. **Add `repo-memory.ts`** — In Step 3.1 you only need a **placeholder** so the project compiles and the service can be wired. That means a file that implements the `InvoiceRepository` interface in name only: each method can throw an error (e.g. `throw new Error("not implemented")`) or return empty/fake data (e.g. `list` returns `{ items: [], total: 0 }`). You are not building the real in-memory storage yet. The **real** implementation (using Maps, actually saving and loading invoices) comes in **Step 3.3**. So: Step 3.1 = add the file and satisfy the type checker; Step 3.3 = make it actually work.
 
 **Check:** Ensure `service.ts` has **no** `import` from `"fastify"` or any HTTP layer.
 
@@ -142,9 +145,12 @@ Define methods (example invoice):
 
 **What to do**
 
-1. **Lock the interface in `repo.ts`.** It should have: `create`, `getById`, `getByPublicId`, `list`, `markPaid` (see Step 3.1 snippet). Add any missing method signatures.
-2. **Service depends only on `InvoiceRepository`.** In `service.ts` the dependency is typed as `InvoiceRepository`, not as the concrete in-memory class. That way you can later pass a different implementation (e.g. `repo-prisma.ts`) without changing the service.
-3. **Wiring:** When you wire the app (Step 3.4), you will create the repo and service once (e.g. in `app.ts`) and pass the service into the route plugin. Routes never import the repository; they only call the service.
+1. **Lock the interface in `repo.ts`.** 
+It should have: `create`, `getById`, `getByPublicId`, `list`, `markPaid` (see Step 3.1 snippet). Add any missing method signatures.
+2. **Service depends only on `InvoiceRepository`.** 
+In `service.ts` the dependency is typed as `InvoiceRepository`, not as the concrete in-memory class. That way you can later pass a different implementation (e.g. `repo-prisma.ts`) without changing the service.
+3. **Wiring:** 
+When you wire the app (Step 3.4), you will create the repo and service once (e.g. in `app.ts`) and pass the service into the route plugin. Routes never import the repository; they only call the service.
 
 ---
 
@@ -225,38 +231,32 @@ For **deterministic tests**, pass a custom `now` and consider id generation that
 
 #### Step 3.4 — Route handlers call the service
 
-Add endpoints (v1):
-- `POST /api/v1/invoices`
-- `GET /api/v1/invoices/:id`
-- `PATCH /api/v1/invoices/:id/paid`
-- `GET /api/v1/public/invoices/:publicId`
+**Current repo shape (reference):** The app is built in `src/app.ts` with `createApp` and `await app.register(v1Routes, { prefix: "/api/v1" })`. The v1 plugin (`src/routes/v1.ts`) owns health, ready, trigger-error and mounts the invoice feature via `registerInvoice(fastify)`. The invoice module is self-contained: `src/modules/invoice/register.ts` creates the repo and service, then registers `invoiceRoutes` with `{ invoiceService }`. Invoice handlers live in `src/modules/invoice/routes.ts` and receive the service via **opts** (no `request.invoiceService`). Schemas live in `src/schemas/invoices/` (create, list, get-by-id). No `get-by-public-id.schema.ts` yet.
+
+Add or update these endpoints (invoice routes are mounted under v1, so URLs are `/api/v1/invoices`, etc.):
+- `POST /api/v1/invoices` ✓ (in `modules/invoice/routes.ts`)
+- `GET /api/v1/invoices` ✓ (list; in `modules/invoice/routes.ts`)
+- `GET /api/v1/invoices/:id` ✓ (in `modules/invoice/routes.ts`)
+- `PATCH /api/v1/invoices/:id/paid` ✓ (in `modules/invoice/routes.ts`)
+- `GET /api/v1/public/invoices/:publicId` ✓ (in `modules/invoice/routes.ts`)
 
 **Done when**
-- handlers are thin (mostly validate → service → reply)
+- handlers are thin (validate → service → reply)
 
 **What to do**
 
-1. **Wire the invoice service into the app.** In `app.ts`, before registering v1 routes, create the repo and service and pass the service into the route plugin:
+1. **Keep wiring in the invoice module.** Service and repo are already created in `src/modules/invoice/register.ts`; no changes in `src/app.ts`. v1 only calls `await registerInvoice(fastify)` — no opts passed from app.
 
-   ```ts
-   import { createInvoiceRepoMemory } from "./modules/invoice/repo-memory.js";
-   import { createInvoiceService } from "./modules/invoice/service.js";
+2. **Service in invoice routes.** The invoice plugin (`src/modules/invoice/routes.ts`) already receives `InvoiceRouteOptions { invoiceService }` and uses `invoiceService` in handlers (closure). No `fastify.decorate` or `request.invoiceService`; no changes to `src/types/fastify.ts` for invoice.
 
-   const invoiceRepo = createInvoiceRepoMemory();
-   const invoiceService = createInvoiceService({ repo: invoiceRepo });
-   await app.register(v1Routes, { prefix: "/api/v1", invoiceService });
-   ```
+3. **Thin handlers in `src/modules/invoice/routes.ts`:**
+   - **POST /invoices** ✓ — Validate body with `CreateInvoicesBodySchema`, call `invoiceService.create(result.data)`, reply 201.
+   - **GET /invoices** ✓ — Validate query with `ListInvoicesQuerySchema`, call `invoiceService.list({ page, limit, status })`, return `listResponse(items, page, limit, total)`.
+   - **GET /invoices/:id** — Validate params with `InvoiceIdParamsSchema` (`src/schemas/invoices/get-by-id.schema.ts`). Call `invoiceService.getById(id)`. If null reply 404 with your error shape; else 200 with the invoice.
+   - **PATCH /invoices/:id/paid** — Validate params (id). Call `invoiceService.markPaid(id)`. If null reply 404; else 200 with the updated invoice.
+   - **GET /public/invoices/:publicId** — Register with path `"public/invoices/:publicId"`. Validate params (publicId); add a schema in `src/schemas/invoices/` (e.g. `get-by-public-id.schema.ts`). Call `invoiceService.getByPublicId(publicId)`. If null reply 404; else 200 with the invoice.
 
-   In `v1.ts`, the plugin receives `(fastify, opts)`. Decorate the fastify instance so handlers can access the service: e.g. `fastify.decorate("invoiceService", opts.invoiceService)`. Extend the Fastify request type in `src/types/fastify.ts` so `request.invoiceService` is typed (e.g. add `invoiceService?: InvoiceService` to the FastifyRequest interface).
-
-2. **Thin handlers in `v1.ts`:**
-   - **POST /invoices** — Validate body with `CreateInvoicesBodySchema`. On success call `await request.invoiceService.create(result.data)` and reply 201 with the returned invoice.
-   - **GET /invoices** — Replace the stub: call `request.invoiceService.list({ page, limit, status })` and return `listResponse(items, page, limit, total)`.
-   - **GET /invoices/:id** — Validate params (e.g. with `InvoiceIdParamsSchema`). Call `request.invoiceService.getById(id)`. If null reply 404 with your error shape; else 200 with the invoice.
-   - **PATCH /invoices/:id/paid** — Validate params (id). Call `request.invoiceService.markPaid(id)`. If null reply 404; else 200 with the updated invoice.
-   - **GET /public/invoices/:publicId** — Register route with path `public/invoices/:publicId`. Validate params (publicId). Call `request.invoiceService.getByPublicId(publicId)`. If null reply 404; else 200 with the invoice.
-
-3. **Example handler (POST /invoices):**
+4. **Example handler (POST /invoices) — current pattern:**
 
    ```ts
    fastify.post("/invoices", async (request, reply) => {
@@ -265,16 +265,23 @@ Add endpoints (v1):
        const { statusCode, body } = zodErrorTo422(result.error, request.id);
        return reply.status(statusCode).send(body);
      }
-     const invoice = await request.invoiceService.create(result.data);
+     const invoice = await invoiceService.create(result.data);
      return reply.status(201).send(invoice);
    });
    ```
+   (Handlers use the `invoiceService` from the plugin opts, not from the request.)
 
-4. **404 handling:** When `getById`, `getByPublicId`, or `markPaid` returns null, reply with your standard 404 error shape (e.g. `errorResponse(ERROR_CODES.NOT_FOUND, "Invoice not found", request.id)`).
+5. **404 handling:** When `getById`, `getByPublicId`, or `markPaid` returns null, reply with your standard 404 error shape (e.g. `errorResponse(ERROR_CODES.NOT_FOUND, "Invoice not found", request.id)` and `reply.status(r.statusCode).send(r.body)`).
 
-5. **Schemas:** Add or reuse param schemas for `:id` and `:publicId` in `src/schemas/invoices/` (e.g. `get-by-id.schema.ts`, `get-by-public-id.schema.ts`) and validate in each handler before calling the service.
+6. **Schemas:** Reuse `src/schemas/invoices/get-by-id.schema.ts` for `:id`. Add `src/schemas/invoices/get-by-public-id.schema.ts` for `:publicId` (e.g. `publicId: z.string().min(1)`) and validate in the public handler before calling the service.
 
-**Note:** You can keep all v1 routes in a single `routes/v1.ts` file; splitting into separate files under `v1/invoices/` and `v1/public/` is optional and matches the "Repo shape" below when you want finer structure.
+---
+
+#### Step 3.5 — Phase 3 tests
+
+Tests are specified in a separate document with full code snippets and a checklist:
+
+- **[04b-phase-3-tests.md](./04b-phase-3-tests.md)** — Unit tests for the invoice service (no HTTP) and integration tests for all invoice endpoints (in-process `app.inject()` only). Implement the two test files described there, then run `npm test` and tick the checklist before marking Phase 3 complete.
 
 ---
 
@@ -285,27 +292,52 @@ Add endpoints (v1):
 
 ### Repo shape (end of Phase 3)
 
+**Current shape (invoice as a self-contained module):**
+
 ```txt
 backend/
   src/
+    app.ts
+    server.ts
+    config/
+      fastify.ts
+    types/
+      fastify.ts
+    errors/
+      error-response.ts
+    http/
+      global-error-handler.ts
+      list-response.ts
+      not-found-handler.ts
+      request-id-hook.ts
+      response-log-hook.ts
+      validate.ts
     modules/
       invoice/
         model.ts
-        service.ts
+        register.ts
         repo.ts
         repo-memory.ts
+        routes.ts
+        service.ts
     routes/
-      v1/
-        invoices/
-          create.route.ts
-          get-by-id.route.ts
-          mark-paid.route.ts
-        public/
-          get-by-public-id.route.ts
+      v1.ts
+    schemas/
+      common/
+        pagination.schema.ts
+      invoices/
+        create.schema.ts
+        list.schema.ts
+        get-by-id.schema.ts
+        get-by-public-id.schema.ts   (add for GET by publicId)
   test/
     invoice.service.test.ts
-    invoice.http.test.ts
+    invoices.http.test.ts
+    (existing: health, ready, error-handling, validation, smoke)
 ```
 
-**Note:** You can meet the phase with all v1 routes in a single `routes/v1.ts`; the split into `v1/invoices/` and `v1/public/` is optional.
+- **v1** (`src/routes/v1.ts`): health, ready, trigger-error; mounts invoice via `registerInvoice(fastify)`.
+- **Invoice** (`src/modules/invoice/`): `register.ts` creates repo + service and registers `routes.ts` with `{ invoiceService }`. Handlers in `routes.ts` use `invoiceService` from opts (closure). No `request.invoiceService`; `src/types/fastify.ts` only augments request with `startAt` (and similar), not the invoice service.
+
+**Optional later:** You can split `modules/invoice/routes.ts` into per-endpoint files (e.g. under `modules/invoice/routes/`) or add `src/routes/v1/invoices/` and `v1/public/` if you prefer route-centric layout; the phase is complete with the module-centric layout above.
 
