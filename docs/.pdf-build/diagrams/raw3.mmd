@@ -1,0 +1,18 @@
+sequenceDiagram
+  actor User
+  participant App as iOS app
+  participant API as Backend API
+  participant Data as Product datastore
+  participant AI as AI services
+
+  User->>App: Take or select photos
+  App->>API: Upload images and context IDs
+  API->>Data: Load tenant context
+  Data-->>API: Site and project history
+  API->>AI: Vision or multimodal plus LLM
+  AI-->>API: Structured suggestions
+  API-->>App: Tags, phase, confidence
+  App->>User: Show suggestions
+  User->>App: Confirm or edit
+  App->>API: Save final labels
+  API->>Data: Persist

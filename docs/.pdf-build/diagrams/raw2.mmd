@@ -1,0 +1,21 @@
+sequenceDiagram
+  actor User
+  participant App as iOS app
+  participant API as Backend API
+  participant Data as Product datastore
+  participant AI as AI services
+
+  User->>App: Start and stop recording
+  App->>API: Upload audio and context IDs
+  API->>Data: Load tenant context
+  Data-->>API: Notes, metadata, labels
+  API->>AI: Speech-to-text
+  AI-->>API: Transcript
+  API->>AI: LLM with transcript and context
+  AI-->>API: Structured draft
+  API-->>App: Draft payload
+  App->>User: Show draft for review
+  User->>App: Edit and confirm
+  App->>API: Persist confirmed note
+  API->>Data: Save final note
+  API-->>App: Acknowledgement

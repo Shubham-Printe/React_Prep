@@ -1,0 +1,20 @@
+flowchart TB
+  subgraph field [Field / user]
+    USER[User]
+  end
+  subgraph ios [iOS application]
+    APP[Native app: capture and review UI]
+  end
+  subgraph backend [Company backend]
+    API[API and job orchestration]
+    DB[(Product datastore)]
+    OBJ[(Media object storage)]
+    API <--> DB
+    API <--> OBJ
+  end
+  subgraph vendors [External AI vendors]
+    AI[Speech-to-text, vision, LLM APIs]
+  end
+  USER <--> APP
+  APP -->|TLS: upload media, call APIs| API
+  API -->|Server-side credentials only| AI
